@@ -4,6 +4,7 @@ Class InfiniteZipGame Extends App
 
 	Field core_img:Image
 	Field player:Player
+	Field cam:Camera
 	Field frame_offset:Int
 	Field track_segments:List<Vec2D>
 	Field gravity:Float
@@ -17,20 +18,25 @@ Class InfiniteZipGame Extends App
 		player = New Player(240, 120, core_img, 0, speed, gravity)
 		track_segments = New List<Vec2D>()
 		GenerateTrack()
+		cam = New Camera()
 	End
 	
 	Method OnUpdate()
 		player.Update(track_segments)
+		cam.Update(player.velocity)
 	End
 	
 	Method OnRender()
 		Cls(220, 220, 220)
+		PushMatrix()
+		Translate(cam.position.x, cam.position.y)
 		player.Draw()
 		'DrawText("x:" + player.zip_box.position.x + " -- y: " + player.zip_box.position.y, 50, 50)
 		'DrawText("width:" + player.zip_box.width + " -- height: " + player.zip_box.height, 50, 70) 
 		
 		DrawTrack()
 		SetColor(255, 255, 255)
+		PopMatrix()
 	End
 	
 	Method GenerateTrack()

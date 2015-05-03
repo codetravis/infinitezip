@@ -33,6 +33,9 @@ Class Player
 	Field frame_offset:Int
 	Field zip_box:Box
 	Field velocity:Vec2D
+	Field y_height:Float
+	Field first_point:Vec2D
+	Field last_point:Vec2D
 	
 	Method New(x:Float, y:Float, img:Image, frame_offset:Int, vx:Float, vy:Float)
 		Self.position = New Vec2D(x, y)
@@ -47,26 +50,31 @@ Class Player
 	End
 	
 	Method Update(track_segments:List<Vec2D>)
-		Local first_point:Vec2D = New Vec2D(0, 320)
-		Local last_point:Vec2D = New Vec2D(480, 320)
+		Self.first_point = New Vec2D(0, 320)
+		Self.last_point = New Vec2D(Self.position.x + 1000, Self.position.y + 1000)
 		For Local segment:Vec2D = Eachin track_segments
-			If Self.position.x > segment.x
-				first_point = segment
-			Else If Self.position.x < segment.x
-				last_point = segment
+			If Self.position.x + 70 > segment.x And segment.x > first_point.x
+				Self.first_point = segment
+			Else If Self.position.x + 70 < segment.x
+				Self.last_point = segment
 				Exit
 			End
 		End
 		
 		' TO DO: calculate line segment height at this point
-		If Self.position.y > first_point.y - 10
+		Self.y_height = (((last_point.y - first_point.y) * (Self.zip_box.position.x - first_point.x))/(last_point.x - first_point.x)) + first_point.y
+
+		If (last_point.x > position.x + 500 And last_point.y > position.y + 500)
+			Self.velocity.y = 4.0 
+		Else If ((Self.zip_box.position.y > y_height - 5) And (Self.zip_box.position.y < y_height + 5))
 			Self.velocity.y = 0
-		Else If position.y < first_point.y + 30
+			Self.position.y = y_height - 25
+		Else
 			Self.velocity.y = 4.0
 		End
 		
 		Self.position.Set(position.x + velocity.x, position.y + velocity.y)
-		Self.zip_box.Update(velocity.x, velocity.y)
+		Self.zip_box.Update(position.x + 70, position.y + 25)
 	End
 	
 	Method Draw()
@@ -77,8 +85,12 @@ Class Player
 		End
 		
 		DrawImage(img, position.x, position.y, 0, 1.0, 1.0, frame_offset + cur_frame)
+		'DrawText("line height calculated to be: " + Self.y_height + " and current y position is " + position.y, position.x - 50, position.y - 50)
 		SetColor(0, 0, 0)
 		Self.zip_box.Draw()
+		SetColor(255, 0, 0)
+		DrawCircle(first_point.x, first_point.y, 5)
+		DrawCircle(last_point.x, last_point.y, 5)
 		SetColor(255, 255, 255)
 	End
 	
@@ -135,7 +147,31 @@ Class Box
 		DrawRect(position.x, position.y, width, height)
 	End
 	
-	Method Update(velocity_x:Float, velocity_y:Float)
-		Self.position.Set(position.x + velocity_x, position.y + velocity_y)
+	Method Update(new_pos_x:Float, new_pos_y:Float)
+		Self.position.Set(new_pos_x, new_pos_y)
+	End
+End
+
+Class Camera
+	' Camera class alos shamelessly borrowed from Jim's Small Time Outlaws
+	' Youtube channel on creating basic games with Monkey X 
+	' Great stuff you should seriously check it out
+	Field original_pos:Vec2D
+	Field position:Vec2D
+	
+	Method New(x:Float=0, y:Float=0)
+		Self.position = New Vec2D(x, y)
+		Self.original_pos = New Vec2D(x, y)
+	End
+	
+	Method Reset()
+		Self.position.Set(original_pos.x, original_pos.y)
+	End
+	
+	' My own take on the update method though
+	' This is what we use to follow the player around
+	Method Update(velocity:Vec2D)
+		Self.position.x -= velocity.x
+		Self.position.y -= velocity.y
 	End
 End
