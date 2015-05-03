@@ -33,20 +33,22 @@ Class Player
 	Field frame_offset:Int
 	Field zip_box:Box
 	Field velocity:Vec2D
+	Field gravity:Float
 	Field y_height:Float
 	Field first_point:Vec2D
 	Field last_point:Vec2D
 	
-	Method New(x:Float, y:Float, img:Image, frame_offset:Int, vx:Float, vy:Float)
+	Method New(x:Float, y:Float, img:Image, frame_offset:Int, vx:Float, vy:Float, gravity:Float)
 		Self.position = New Vec2D(x, y)
 		Self.img = img
 		Self.frame_offset = frame_offset
 		Self.zip_box = New Box(x + 70, y + 25, 50, 30)
 		Self.velocity = New Vec2D(vx, vy)
+		Self.gravity = gravity
 		
 		animations.AddLast(New Animation("sliding", 0, 4, 5))
 		animations.AddLast(New Animation("jumping", 4, 2, 5))
-		SetAnimation("sliding")
+		SetAnimation("jumping")
 	End
 	
 	Method Update(track_segments:List<Vec2D>)
@@ -65,12 +67,19 @@ Class Player
 		Self.y_height = (((last_point.y - first_point.y) * (Self.zip_box.position.x - first_point.x))/(last_point.x - first_point.x)) + first_point.y
 
 		If (last_point.x > position.x + 500 And last_point.y > position.y + 500)
-			Self.velocity.y = 4.0 
+			Self.velocity.y = Min(velocity.y + gravity, gravity) 
 		Else If ((Self.zip_box.position.y > y_height - 5) And (Self.zip_box.position.y < y_height + 5))
-			Self.velocity.y = 0
-			Self.position.y = y_height - 25
+			If (TouchDown(0))
+				Self.velocity.y -= 40
+				SetAnimation("jumping")
+			Else
+				' Set the Y velocity for the camera to be able to follow acurately
+				Self.velocity.y = (last_point.y - first_point.y)/(last_point.x - first_point.x)
+				Self.position.y = y_height - 25
+				SetAnimation("sliding")
+			End
 		Else
-			Self.velocity.y = 4.0
+			Self.velocity.y = Min(velocity.y + gravity, gravity)
 		End
 		
 		Self.position.Set(position.x + velocity.x, position.y + velocity.y)

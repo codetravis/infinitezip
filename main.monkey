@@ -13,9 +13,9 @@ Class InfiniteZipGame Extends App
 	Method OnCreate()
 		SetUpdateRate(60)
 		gravity = 4.0
-		speed = 1.0
-		core_img = LoadImage("edited_game_img.png", 180, 230, 4, 0.5)
-		player = New Player(240, 120, core_img, 0, speed, gravity)
+		speed = 2.0
+		core_img = LoadImage("edited_game_img.png", 180, 230, 8, 0.5)
+		player = New Player(240, 120, core_img, 0, speed, gravity, gravity)
 		track_segments = New List<Vec2D>()
 		GenerateTrack()
 		cam = New Camera()
