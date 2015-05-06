@@ -51,37 +51,50 @@ Class Player
 		SetAnimation("jumping")
 	End
 	
-	Method Update(track_segments:List<Vec2D>)
+	Method Update(track_segments:List<Vec2D>, track_holes:List<Int>)
 		Self.first_point = New Vec2D(0, 320)
 		Self.last_point = New Vec2D(Self.position.x + 1000, Self.position.y + 1000)
+		Local count = 0
+		Local seg_count = 0
 		For Local segment:Vec2D = Eachin track_segments
 			If Self.position.x + 70 > segment.x And segment.x > first_point.x
 				Self.first_point = segment
+				seg_count = count + 1
 			Else If Self.position.x + 70 < segment.x
 				Self.last_point = segment
 				Exit
 			End
+			count += 1
 		End
 		
-		' TO DO: calculate line segment height at this point
-		Self.y_height = (((last_point.y - first_point.y) * (Self.zip_box.position.x - first_point.x))/(last_point.x - first_point.x)) + first_point.y
-
-		If (last_point.x > position.x + 500 And last_point.y > position.y + 500)
-			Self.velocity.y = Min(velocity.y + gravity, gravity) 
-		Else If ((Self.zip_box.position.y > y_height - 5) And (Self.zip_box.position.y < y_height + 5))
-			If (TouchDown(0))
-				Self.velocity.y -= 40
-				SetAnimation("jumping")
+		' If we are not over a hole, check to see if we are on the line and stop us from falling if we are
+		If Not track_holes.Contains(seg_count)
+		
+			' TO DO: calculate line segment height at this point
+			Self.y_height = (((last_point.y - first_point.y) * (Self.zip_box.position.x - first_point.x))/(last_point.x - first_point.x)) + first_point.y - 2
+	
+			If (last_point.x > position.x + 500 And last_point.y > position.y + 500)
+				Self.velocity.y = Min(velocity.y + gravity, gravity) 
+			Else If ((Self.zip_box.position.y > y_height - 5) And (Self.zip_box.position.y < y_height + 5))
+				If (TouchDown(0))
+					Self.velocity.y -= 40
+					Self.velocity.x += 1.0
+					SetAnimation("jumping")
+				Else
+					' Set the Y velocity for the camera to be able to follow acurately
+					Self.velocity.y = Min((last_point.y - first_point.y)/(last_point.x - first_point.x), gravity)
+					Self.position.y = y_height - 25
+					Self.velocity.x = gravity
+					SetAnimation("sliding")
+				End
 			Else
-				' Set the Y velocity for the camera to be able to follow acurately
-				Self.velocity.y = (last_point.y - first_point.y)/(last_point.x - first_point.x)
-				Self.position.y = y_height - 25
-				SetAnimation("sliding")
-			End
+				Self.velocity.y = Min(velocity.y + gravity, gravity)
+			End	
 		Else
 			Self.velocity.y = Min(velocity.y + gravity, gravity)
+			SetAnimation("jumping")
 		End
-		
+
 		Self.position.Set(position.x + velocity.x, position.y + velocity.y)
 		Self.zip_box.Update(position.x + 70, position.y + 25)
 	End
