@@ -75,7 +75,7 @@ Class Player
 	
 			If (last_point.x > position.x + 500 And last_point.y > position.y + 500)
 				Self.velocity.y = Min(velocity.y + gravity, gravity) 
-			Else If ((Self.zip_box.position.y > y_height - 5) And (Self.zip_box.position.y < y_height + 5))
+			Else If ((Self.zip_box.position.y > y_height - 5) And (Self.zip_box.position.y < y_height + 10))
 				If (TouchDown(0))
 					Self.velocity.y -= 40
 					Self.velocity.x += 1.0
@@ -111,8 +111,8 @@ Class Player
 		SetColor(0, 0, 0)
 		Self.zip_box.Draw()
 		SetColor(255, 0, 0)
-		DrawCircle(first_point.x, first_point.y, 5)
-		DrawCircle(last_point.x, last_point.y, 5)
+		'DrawCircle(first_point.x, first_point.y, 5)
+		'DrawCircle(last_point.x, last_point.y, 5)
 		SetColor(255, 255, 255)
 	End
 	
